@@ -1,0 +1,380 @@
+{
+  "name": "Payroll-Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+          "mode": "list",
+          "cachedResultName": "Copy of DEMO [2025] UHH13 Payroll Testing - Alphalist Schedule 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 44196909,
+          "mode": "list",
+          "cachedResultName": "Alphalist - Schedule 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg/edit#gid=44196909"
+        },
+        "options": {}
+      },
+      "id": "8c194bc4-d7c9-4dd8-abd9-8813de53b09f",
+      "name": "Spreadsheet Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        160
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "EoNgu92SAMrIn4n4",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sheetId": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+        "options": {}
+      },
+      "id": "f2852f14-96d9-4a4c-a2aa-09880886ec88",
+      "name": "Read Config Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        160
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q31kmrWX8MJnBilH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sheetId": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+        "range": "Test Setup!A1:Z100",
+        "options": {}
+      },
+      "id": "32a185b9-c3b7-4164-a506-89672ddd20f5",
+      "name": "Read Test Setup",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        144,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q31kmrWX8MJnBilH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => {\n  const row = item.json;\n  return {\n    json: {\n      employeeId: row[\"EmployeeID\"] || \"\",\n      contract: row[\"Contract\"] || \"\",\n      shift: row[\"Shift\"] || \"\",\n      attendance: row[\"Attendance\"] || \"\",\n      overtime: row[\"Overtime\"] || \"\",\n      holiday: row[\"Holiday\"] || \"\",\n      late: row[\"Late\"] || \"\",\n      undertime: row[\"Undertime\"] || \"\",\n      absent: row[\"Absent\"] || \"\"\n    }\n  };\n});\n"
+      },
+      "id": "9a504ee4-687d-4fd9-b2a8-17c3a5c48172",
+      "name": "Generate Test Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        384,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+        "range": "Generated Data!A1",
+        "options": {}
+      },
+      "id": "92ac69a2-0684-495e-8d4b-3684cb1d0bd6",
+      "name": "Write Generated Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        640,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q31kmrWX8MJnBilH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"PayrollAPI_URL\"] || \"https://uhh-hris.api/import\"}}",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "0c0e3ac1-03d1-4971-add0-1bd8e0815ac8",
+      "name": "Import to Payroll API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        944,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"PayrollAPI_URL\"] || \"https://uhh-hris.api/runPayroll\"}}",
+        "options": {}
+      },
+      "id": "4d685db5-557d-4a27-b4a1-24efa7db56ca",
+      "name": "Run Payroll",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"PayrollAPI_URL\"] || \"https://uhh-hris.api/getResults\"}}",
+        "options": {}
+      },
+      "id": "fe27f978-780f-4b08-aba2-3da2ef5ca72e",
+      "name": "Get Payroll Output",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+        "range": "System Output!A1",
+        "options": {}
+      },
+      "id": "ddb1851f-429c-4627-bfe5-34f57805a202",
+      "name": "Save System Output",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q31kmrWX8MJnBilH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => {\n  const expected = item.json.expected;\n  const actual = item.json.actual;\n  return {\n    json: {\n      employeeId: item.json.employeeId,\n      expectedPay: expected,\n      actualPay: actual,\n      match: expected === actual\n    }\n  };\n});"
+      },
+      "id": "90846cfe-2815-4ae6-bb42-fefc86039720",
+      "name": "Compare Results",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "1TGKWue2R73s_FwczGKekb0VoZVXht5DaoJakenpw2Hg",
+        "range": "Comparison!A1",
+        "options": {}
+      },
+      "id": "571a2260-bf92-46f4-b8e7-5743deb237fb",
+      "name": "Write Comparison Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q31kmrWX8MJnBilH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "qa-alerts@yourcompany.com",
+        "toEmail": "={{$json[\"AlertEmails\"] || \"qa-team@company.com\"}}",
+        "subject": "Payroll Test Discrepancy Report",
+        "text": "Check comparison sheet",
+        "options": {}
+      },
+      "id": "c1a02188-8404-4fc2-9bc1-5ce80b9018b7",
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        160
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "jt7B6L80GwBmoaoh",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Spreadsheet Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Config Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Test Setup": {
+      "main": [
+        [
+          {
+            "node": "Generate Test Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Test Data": {
+      "main": [
+        [
+          {
+            "node": "Write Generated Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Generated Data": {
+      "main": [
+        [
+          {
+            "node": "Import to Payroll API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Import to Payroll API": {
+      "main": [
+        [
+          {
+            "node": "Run Payroll",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Payroll": {
+      "main": [
+        [
+          {
+            "node": "Get Payroll Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Payroll Output": {
+      "main": [
+        [
+          {
+            "node": "Save System Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save System Output": {
+      "main": [
+        [
+          {
+            "node": "Compare Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Results": {
+      "main": [
+        [
+          {
+            "node": "Write Comparison Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Comparison Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Config Sheet": {
+      "main": [
+        [
+          {
+            "node": "Read Test Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ad4cab1a-0498-41ab-a9bd-60bffc69c1f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51a755c9d69b7a698c96a3fad86a45ee2f7b35767bc50c1941877495e65fd572"
+  },
+  "id": "2p7EnMAlbqRunomm",
+  "tags": []
+}
